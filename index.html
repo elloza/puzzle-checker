@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Puzzle Verifier — El jardín de las delicias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --overlay: rgba(10, 15, 25, 0.75);
+        --accent: #ff4350;
+        --accent-strong: #d7263d;
+        --card-bg: rgba(17, 27, 46, 0.8);
+        --text: #f5f7fa;
+        --muted: rgba(245, 247, 250, 0.7);
+        --shadow: 0 30px 60px rgba(10, 12, 28, 0.55);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background-color: #0b1120;
+        padding: clamp(2rem, 4vw, 5rem) clamp(1.25rem, 4vw, 3rem);
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background-image: linear-gradient(var(--overlay), var(--overlay)),
+          url("https://upload.wikimedia.org/wikipedia/commons/6/62/The_Garden_of_Earthly_Delights_by_Bosch_High_Resolution_2.jpg");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        transform: scale(1.08);
+        transform-origin: center;
+      }
+
+      main {
+        width: min(960px, 100%);
+        display: grid;
+        gap: clamp(1.75rem, 3vw, 2.5rem);
+        margin: 0 auto;
+      }
+
+      header h1 {
+        margin: 0;
+        font-family: "Playfair Display", serif;
+        font-size: clamp(2.5rem, 4vw, 3.5rem);
+        font-weight: 700;
+        letter-spacing: -0.03em;
+      }
+
+      .demo-banner {
+        background: linear-gradient(135deg, rgba(255, 193, 7, 0.2), rgba(255, 152, 0, 0.2));
+        border: 1px solid rgba(255, 193, 7, 0.4);
+        border-radius: 16px;
+        padding: 1rem 1.5rem;
+        margin: 1rem 0;
+        text-align: center;
+        color: #ffc107;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+
+      header p {
+        margin: 0.75rem 0 0;
+        font-size: clamp(1rem, 2.2vw, 1.2rem);
+        color: var(--muted);
+        max-width: 48ch;
+        line-height: 1.6;
+      }
+
+      section.card {
+        background: var(--card-bg);
+        border-radius: 28px;
+        padding: clamp(2rem, 4vw, 3rem);
+        box-shadow: var(--shadow);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(10px);
+      }
+
+      .steps {
+        display: grid;
+        gap: 1.4rem;
+        counter-reset: step;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .steps li {
+        counter-increment: step;
+        padding-left: 3.5rem;
+        position: relative;
+      }
+
+      .steps li::before {
+        content: counter(step);
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 2.6rem;
+        height: 2.6rem;
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        box-shadow: 0 12px 24px rgba(215, 38, 61, 0.45);
+      }
+
+      .steps strong {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.45rem;
+        font-size: 1.05rem;
+      }
+
+      .session-code {
+        margin: 1.5rem 0;
+        padding: 1rem 1.4rem;
+        border-radius: 16px;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.1em;
+        background: rgba(255, 255, 255, 0.08);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        row-gap: 0.5rem;
+        justify-content: center;
+        width: min(100%, 420px);
+      }
+
+      .session-code button {
+        background: transparent;
+        border: none;
+        color: var(--muted);
+        font-size: 0.85rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+      }
+
+      .uploader {
+        display: grid;
+        gap: 1.2rem;
+        margin-top: 2rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      }
+
+      .uploader input[type="file"] {
+        padding: 1rem;
+        border-radius: 16px;
+        background: rgba(15, 20, 35, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: var(--muted);
+        width: 100%;
+      }
+
+      .uploader button {
+        justify-self: start;
+        padding: 0.9rem 1.8rem;
+        border-radius: 999px;
+        border: none;
+        font-weight: 600;
+        font-size: 1rem;
+        background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+        color: #fff;
+        cursor: pointer;
+        box-shadow: 0 18px 32px rgba(215, 38, 61, 0.4);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        width: fit-content;
+        justify-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+      }
+
+      .uploader button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 22px 36px rgba(215, 38, 61, 0.5);
+      }
+
+      .session-code button:focus-visible,
+      .uploader button:focus-visible {
+        outline: 3px solid rgba(255, 255, 255, 0.35);
+        outline-offset: 2px;
+      }
+
+      pre {
+        background: rgba(7, 10, 22, 0.7);
+        border-radius: 18px;
+        padding: 1.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        max-height: 240px;
+        overflow: auto;
+        font-size: 0.95rem;
+        color: #fefefe;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .results {
+        background: rgba(7, 10, 22, 0.7);
+        border-radius: 18px;
+        padding: 1.4rem;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        margin-top: 1rem;
+      }
+
+      .loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.8rem;
+        padding: 2rem;
+        color: var(--muted);
+      }
+
+      .spinner {
+        width: 24px;
+        height: 24px;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+        border-top: 3px solid var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .result-summary {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 1.2rem;
+        border-radius: 16px;
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+
+      .result-summary.success {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #22c55e;
+      }
+
+      .result-summary.failure {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(220, 38, 38, 0.2));
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+      }
+
+      .result-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: bold;
+      }
+
+      .result-icon.success {
+        background: #22c55e;
+        color: white;
+      }
+
+      .result-icon.failure {
+        background: #ef4444;
+        color: white;
+      }
+
+      .checks-list {
+        display: grid;
+        gap: 0.8rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .check-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.2s ease;
+      }
+
+      .check-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .check-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      .check-icon.pass {
+        background: #22c55e;
+        color: white;
+      }
+
+      .check-icon.fail {
+        background: #ef4444;
+        color: white;
+      }
+
+      .check-content {
+        flex: 1;
+      }
+
+      .check-name {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+        text-transform: capitalize;
+      }
+
+      .check-details {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .secret-message {
+        margin-top: 1.5rem;
+        padding: 1.5rem;
+        border-radius: 16px;
+        text-align: center;
+      }
+
+      .secret-message.unlocked {
+        background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 193, 7, 0.15));
+        border: 1px solid rgba(255, 215, 0, 0.3);
+      }
+
+      .secret-message.locked {
+        background: linear-gradient(135deg, rgba(107, 114, 128, 0.15), rgba(75, 85, 99, 0.15));
+        border: 1px solid rgba(107, 114, 128, 0.3);
+      }
+
+      .secret-message h3 {
+        margin: 0 0 0.8rem;
+        font-family: "Playfair Display", serif;
+        font-size: clamp(1.5rem, 3vw, 2rem);
+      }
+
+      .secret-message.unlocked h3 {
+        color: #ffd700;
+      }
+
+      .secret-message.locked h3 {
+        color: #9ca3af;
+      }
+
+      .secret-message p {
+        margin: 0;
+        font-size: clamp(1.2rem, 2.5vw, 1.8rem);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        line-height: 1.3;
+      }
+
+      .secret-message.unlocked p {
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+
+      .secret-message.locked p {
+        color: #6b7280;
+      }
+
+      .session-info {
+        margin-top: 1rem;
+        padding: 0.8rem;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .session-info strong {
+        color: #fff;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      footer {
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--muted);
+      }
+
+      @media (max-width: 720px) {
+        body::before {
+          transform: scale(1.15);
+        }
+      }
+
+      @media (min-width: 721px) {
+        .session-code {
+          justify-content: space-between;
+          width: fit-content;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>El jardín de las delicias — Puzzle Check</h1>
+        <div class="demo-banner">
+          🚀 VERSIÓN FUNCIONAL - Conectado con IA real para verificación de puzzles
+        </div>
+        <p>
+          Sube tu foto y deja que la IA compruebe si el puzle, la camiseta y el código secreto encajan.
+          Cuando todo sea perfecto, recibirás el mensaje oculto.
+        </p>
+      </header>
+
+      <section class="card">
+        <ol class="steps">
+          <li>
+            <strong>Escribe el código</strong>
+            Copia el código aleatorio en un papel y colócalo junto al puzle.
+          </li>
+          <li>
+            <strong>Monta la escena</strong>
+            Termina el puzle gigante de <em>El jardín de las delicias</em> y túmbate con tu camiseta rojiblanca del Atleti.
+          </li>
+          <li>
+            <strong>Haz la foto y súbela</strong>
+            Asegúrate de que se vea todo: puzle, persona tumbada, camiseta y el código en el papel.
+          </li>
+          <li>
+            <strong>Comprueba el resultado</strong>
+            Pulsa “Comprobar” y espera a que aparezca el veredicto.
+          </li>
+        </ol>
+
+        <div class="session-code">
+          <span>Código de sesión:</span>
+          <strong id="sessionCode">ESPIGA-000</strong>
+          <button type="button" id="refreshCode" aria-label="Generar otro código">↻ actualizar</button>
+        </div>
+
+        <div class="uploader">
+          <input id="photo" type="file" accept="image/*" />
+          <button id="go" type="button">Comprobar foto</button>
+        </div>
+
+        <div id="results" class="results hidden"></div>
+
+        <pre id="out" class="hidden">Sube tu foto y pulsa “Comprobar” para ver el resultado.</pre>
+      </section>
+
+      <footer>
+        Privacidad: la imagen solo se usa para verificar este reto. No se identifica a nadie ni se almacena.
+      </footer>
+    </main>
+
+    <script>
+      // Configuración automática de API URL
+      const isLocalhost = window.location.hostname === 'localhost' || 
+                         window.location.hostname === '127.0.0.1' || 
+                         window.location.hostname === '';
+      
+      const API_URL = isLocalhost 
+        ? "http://127.0.0.1:8080/check"  // Para desarrollo local
+        : "http://jitsi.emeriti.es:8000/check"; // API en producción (HTTP)
+
+      const codeEl = document.getElementById("sessionCode");
+      const outEl = document.getElementById("out");
+      const resultsEl = document.getElementById("results");
+
+      function resetResults() {
+        resultsEl.classList.add("hidden");
+        resultsEl.innerHTML = "";
+        outEl.classList.add("hidden");
+        outEl.textContent = "Sube tu foto y pulsa “Comprobar” para ver el resultado.";
+      }
+
+      function generateCode() {
+        const random = Math.floor(100 + Math.random() * 900);
+        codeEl.textContent = `ESPIGA-${random}`;
+        resetResults();
+      }
+
+      function showLoading() {
+        resultsEl.classList.remove("hidden");
+        resultsEl.innerHTML = `
+          <div class="loading">
+            <div class="spinner"></div>
+            <span>Analizando tu foto con IA...</span>
+          </div>
+        `;
+      }
+
+      function getCheckIcon(passed) {
+        return passed
+          ? '<div class="check-icon pass">✓</div>'
+          : '<div class="check-icon fail">✗</div>';
+      }
+
+      function createCheckItem(check) {
+        return `
+          <li class="check-item">
+            ${getCheckIcon(check.ok)}
+            <div class="check-content">
+              <div class="check-name">${check.name}</div>
+              ${check.details ? `<div class="check-details">${check.details}</div>` : ""}
+            </div>
+          </li>
+        `;
+      }
+
+      function showResults(data) {
+        const isSuccess = Boolean(data.pass);
+        const secretMessage = data.secret ?? "MENSAJE SECRETO NO DESBLOQUEADO";
+        const resultIcon = isSuccess
+          ? '<div class="result-icon success">🎉</div>'
+          : '<div class="result-icon failure">❌</div>';
+
+        const resultText = isSuccess
+          ? "¡Felicidades! Todo está perfecto"
+          : "Aún hay cosas que mejorar";
+
+        const checksHtml = Array.isArray(data.reasons)
+          ? data.reasons.map(createCheckItem).join("")
+          : "";
+
+        const secretSection = `
+          <div class="secret-message ${isSuccess ? "unlocked" : "locked"}">
+            <h3>${isSuccess ? "🏆 Mensaje secreto revelado" : "🔒 Mensaje secreto bloqueado"}</h3>
+            <p>${secretMessage}</p>
+          </div>
+        `;
+
+        const sessionInfo = `
+          <div class="session-info">
+            <strong>Código enviado:</strong> ${data.session_code_submitted || "N/A"}<br />
+            <strong>Código leído:</strong> ${data.session_code_read || "No detectado"}
+          </div>
+        `;
+
+        resultsEl.classList.remove("hidden");
+        resultsEl.innerHTML = `
+          <div class="result-summary ${isSuccess ? "success" : "failure"}">
+            ${resultIcon}
+            <span>${resultText}</span>
+          </div>
+
+          ${checksHtml
+            ? `
+              <h4 style="margin: 0 0 1rem; color: var(--text); font-size: 1.1rem;">Verificaciones:</h4>
+              <ul class="checks-list">
+                ${checksHtml}
+              </ul>
+            `
+            : ""}
+
+          ${secretSection}
+          ${sessionInfo}
+        `;
+
+        outEl.textContent = JSON.stringify(data, null, 2);
+      }
+
+      function showError(message) {
+        resultsEl.classList.remove("hidden");
+        resultsEl.innerHTML = `
+          <div class="result-summary failure">
+            <div class="result-icon failure">⚠️</div>
+            <span>Error: ${message}</span>
+          </div>
+        `;
+      }
+
+      document.getElementById("refreshCode").addEventListener("click", generateCode);
+      generateCode();
+
+      document.getElementById("go").addEventListener("click", async () => {
+        const file = document.getElementById("photo").files[0];
+        if (!file) {
+          alert("Selecciona una imagen");
+          return;
+        }
+
+        const fd = new FormData();
+        fd.append("session_code", codeEl.textContent.trim());
+        fd.append("photo", file);
+
+        showLoading();
+
+        try {
+          const response = await fetch(API_URL, {
+            method: "POST",
+            body: fd,
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            showResults(data);
+
+            if (data.pass && data.secret && data.secret !== "MENSAJE SECRETO NO DESBLOQUEADO") {
+              setTimeout(() => {
+                alert(`🎉 ¡ENHORABUENA! 🎉\n\n${data.secret}`);
+              }, 500);
+            }
+          } else {
+            showError(data.detail || "La verificación ha fallado");
+          }
+        } catch (error) {
+          console.error(error);
+          showError("Error de conexión con el servidor");
+        }
+      });
+
+      window.showDebugJSON = function () {
+        outEl.classList.toggle("hidden");
+      };
+    </script>
+  </body>
+</html>
